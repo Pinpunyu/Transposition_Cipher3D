@@ -1,4 +1,6 @@
 import functools
+import qrcode
+import binascii
 
 class Transposition_Cipher3D:
 
@@ -49,13 +51,16 @@ class Transposition_Cipher3D:
             cipher_str += bit[3]
 
         cipher = ""
+        cipher_hex = ""
         for idx in range(0 , len(cipher_str) , 8):
             # Getting the ASCII value
             cipher += chr(int(cipher_str[idx:idx+8],2))
+            cipher_hex += "{:02x}".format(int(cipher_str[idx:idx+8],2))
+            # print(type(int(cipher_str[idx:idx+8],2)))
             # print("{:02x}".format(int(cipher_str[idx:idx+8],2)) , int(cipher_str[idx:idx+8],2))
 
                 
-        return cipher
+        return cipher_hex
         
     def decrypt(ciphertext:str , key:str) -> str:
         
@@ -71,9 +76,12 @@ class Transposition_Cipher3D:
             key_bin = format(int(ascii), "b").zfill(8)
             # print(f"{ascii} = {key_bin}")
 
-            # ciphertext轉成ASCii二進位
-            cipher_ascii = ord(ciphertext[zidx])
-            cipher_ascii = format(int(cipher_ascii), "b").zfill(8)
+            # ciphertext(16進位)轉成ASCii二進位
+            # print(ciphertext[2*zidx:2*zidx+2])
+            
+
+            byte_string = binascii.unhexlify(ciphertext[2*zidx:2*zidx+2])
+            cipher_ascii = format(bin(int.from_bytes(byte_string, byteorder='big')).lstrip('0b')).zfill(8)
             total_cipher += cipher_ascii
             # print(f"plain[{zidx}] = {cipher_ascii}")
 
@@ -109,13 +117,15 @@ class Transposition_Cipher3D:
         # print(plain_str)
         
         plain = ""
+        plain_hex = ""
         for idx in range(0 , len(plain_str) , 8):
             # Getting the ASCII value
             plain += chr(int(plain_str[idx:idx+8],2))
+            plain_hex += "{:02x}".format(int(plain_str[idx:idx+8],2))
             # print("{:02x}".format(int(plain_str[idx:idx+8],2)) , int(plain_str[idx:idx+8],2))
 
                 
-        return plain
+        return plain_hex
 
 
     def __encrypt_cmp__(a:list, b:list) -> bool:
@@ -140,6 +150,10 @@ class Transposition_Cipher3D:
             rel = 1 if a[1] > b[1] else -1
             return rel
 
+def ciphertext_to_qrcode(cipher:str):
+    img = qrcode.make(cipher)
+    img.save("qrcode.png")
+    # img.show()
    
 
 # three = ('11','01','11','01','11')
@@ -156,5 +170,8 @@ key       = "aaaaaaaa"
 print(f"plaintext = {plaintext}, key = {key}")
 
 ciphertext_input = Transposition_Cipher3D.encrypt(plaintext, key)
-plaintext_output = Transposition_Cipher3D.decrypt(ciphertext_input, "aaaa0aa0")
+ciphertext_to_qrcode(ciphertext_input)
+plaintext_output = Transposition_Cipher3D.decrypt(ciphertext_input, key)
 print(f"plaintext = {plaintext_output}")
+
+
