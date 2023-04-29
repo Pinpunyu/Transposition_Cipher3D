@@ -1,4 +1,4 @@
-## 套件
+## Setup
 
 ```cmd 
 pip install qrcode
